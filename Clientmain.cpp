@@ -31,15 +31,17 @@ ssize_t x;
 
 	if (connectvalue!=0){cout <<"Parta "<<endl;}
 	char buf[500];
-	while(connectvalue==0){
-		cin.getline(buf,500);
 
-		ssize_t y= write( socketfd,buf, 500);
-		bzero(buf,500);
+	do{
+	cin.getline(buf,500);
 
-		x=read( socketfd,buf, 500);
-		cout<<buf<<endl;
-	}
+	ssize_t y= write( socketfd,buf, 500);
+	bzero(buf,500);
+
+	x=read( socketfd,buf, 500);
+	cout<<buf<<endl;
+	}while (x!=-1);
+	
 
 	close(socketfd);
 

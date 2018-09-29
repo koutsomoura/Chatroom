@@ -46,22 +46,17 @@ int main(){
 	cout<<"perase to accept"<<endl; 
 	char buf[500];
 
-	while(acceptvalue!=-1){
-		
-		ssize_t x;
-		if (x=read( acceptvalue, buf, 500)==0){
-			x=pthread_create (&threads, NULL, exit, NULL);
-		}else{
-			x=read( acceptvalue, buf, 500);
-		}
-		cout<<buf<<endl;
+ssize_t	x;
+	do{
+	x=read( acceptvalue, buf, 500);
+	cout<<buf<<endl;
 
-		bzero(buf,500);		
-		cin.getline(buf,500);
+	bzero(buf,500);
+	cin.getline(buf,500);
 
-		ssize_t y=write( acceptvalue,buf, 500);
-	}
-	
+	ssize_t y=write( acceptvalue,buf, 500);
+}while (x!=-1);
+
 	close(acceptvalue);
 	close(socketfd);
 }
