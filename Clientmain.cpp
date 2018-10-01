@@ -12,7 +12,8 @@ using namespace std;
 
 int main(){
 	int portno=5033;
-ssize_t x;
+	ssize_t x;
+	ssize_t y;
 	int socketfd=socket( AF_INET ,SOCK_STREAM ,0);
 
 	struct sockaddr_in addr1;
@@ -23,23 +24,24 @@ ssize_t x;
 	addr1.sin_addr.s_addr=inet_addr("127.0.0.1");
 	socklen_t clilen;
 	clilen=sizeof(addr1);
-		cout<<"prin to connect()"<<endl; 
 
-
+	//Connect Client with Server
 	int connectvalue=connect(socketfd,(struct sockaddr *)&addr1,clilen);
-			cout<<"meta to connect()"<<connectvalue<<endl; 
-
+	//If connect() return error
 	if (connectvalue!=0){cout <<"Parta "<<endl;}
+	//create string with 500 max letters
 	char buf[500];
 
 	do{
-	cin.getline(buf,500);
-
-	ssize_t y= write( socketfd,buf, 500);
-	bzero(buf,500);
-
-	x=read( socketfd,buf, 500);
-	cout<<buf<<endl;
+		cin.getline(buf,500);
+		//Send buf to server
+		y= write( socketfd,buf, 500);
+		//Clean buf
+		bzero(buf,500);
+		//Recieve buf from server
+		x=read( socketfd,buf, 500);
+		cout<<buf<<endl;
+	//The loop stop only if read() return error
 	}while (x!=-1);
 	
 
