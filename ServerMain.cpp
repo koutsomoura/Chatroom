@@ -8,15 +8,42 @@
 #include <string.h>
 #include <pthread.h>
 using namespace std;
+#define maxmsg 500
+#define maxLengthOfPendingConnections 10
 
+void *myThreadFun(void *buf) 
+{
+	bzero((char*)buf,maxmsg);
+	cin.getline((char*)buf,maxmsg);
+	return NULL;
+}
+void Speak(int *acceptvalue){
+	ssize_t	x;
+	ssize_t y;
+	pthread_t thread_1;
 
+	char buf[maxmsg];
+
+	do{
+		pthread_create(&thread_1,NULL, myThreadFun, &buf); 
+		//Wait until read buf from client
+		x=read( *acceptvalue, buf, maxmsg);
+		cout<<buf<<endl;
+		//Clean buf
+		bzero(buf,maxmsg);
+		cin.getline(buf,maxmsg);
+		//Send a new buf to client
+		y=write( *acceptvalue,buf, maxmsg);
+		pthread_join(thread_1, NULL); 
+	//The loop stop only if read() return error
+	}while (x!=-1);
+	return;
+}
 
 int main(){
 	int portno=5033;
 	int socketfd=socket( AF_INET ,SOCK_STREAM ,0);
-	ssize_t	x;
-	ssize_t y;
-	pthread_t threads;
+
 	struct sockaddr_in addr;
 	struct sockaddr_in addr1;
 	socklen_t clilen;
@@ -28,7 +55,7 @@ int main(){
 	//create a bind
 	int desimo=bind(socketfd, (struct sockaddr *) &addr,sizeof(addr));
 	//listen() marks the socket referred to by scketfd as passive socket
-	int ginetePassive=listen(socketfd,10);
+	int ginetePassive=listen(socketfd,maxLengthOfPendingConnections);
 	//if listen return error
 	if (ginetePassive!=0){
 		cout<<"Lathos"<<endl;
@@ -41,21 +68,9 @@ int main(){
 	if (acceptvalue==-1){
 		cout<<"Den ekane accept"<<endl;
 	}
-	char buf[500];
 
-
-	do{
-		//Wait until read buf from client
-		x=read( acceptvalue, buf, 500);
-		cout<<buf<<endl;
-		//Clean buf
-		bzero(buf,500);
-		cin.getline(buf,500);
-		//Send a new buf to client
-		y=write( acceptvalue,buf, 500);
-	//The loop stop only if read() return error
-	}while (x!=-1);
-
+	Speak(&acceptvalue);
+	
 	close(acceptvalue);
 	close(socketfd);
 }
