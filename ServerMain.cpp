@@ -11,10 +11,25 @@ using namespace std;
 #define maxmsg 500
 #define maxLengthOfPendingConnections 10
 
-void *myThreadFun(void *buf) 
+void *myThreadFun(void *mpla) 
 {
-	bzero((char*)buf,maxmsg);
-	cin.getline((char*)buf,maxmsg);
+	char buf[maxmsg];
+	cin.getline(buf,maxmsg);
+	write( *(int *)mpla,buf, maxmsg);		
+	bzero(buf,maxmsg);
+	sleep(1);
+	pthread_exit(NULL);
+	return NULL;
+}
+void *myThreadFun2(void *mpla) 
+{
+	char buf[maxmsg];
+	read( *(int *)mpla,buf, maxmsg);
+	cout<<buf<<endl;
+	printf("%d ON THREAD\n",*(int *)mpla);	
+	bzero(buf,maxmsg);
+	pthread_exit(NULL);
+	sleep(1);
 	return NULL;
 }
 void Speak(int *acceptvalue){
@@ -25,16 +40,18 @@ void Speak(int *acceptvalue){
 	char buf[maxmsg];
 
 	do{
-		pthread_create(&thread_1,NULL, myThreadFun, &buf); 
+		pthread_create(&thread_1,NULL, myThreadFun,(void *) &(*(int *)acceptvalue)); 
 		//Wait until read buf from client
 		x=read( *acceptvalue, buf, maxmsg);
 		cout<<buf<<endl;
+
 		//Clean buf
 		bzero(buf,maxmsg);
+		pthread_create(&thread_1,NULL, myThreadFun2,(void *) &(*(int *)acceptvalue)); 
 		cin.getline(buf,maxmsg);
 		//Send a new buf to client
 		y=write( *acceptvalue,buf, maxmsg);
-		pthread_join(thread_1, NULL); 
+
 	//The loop stop only if read() return error
 	}while (x!=-1);
 	return;
