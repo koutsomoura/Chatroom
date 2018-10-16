@@ -21,16 +21,7 @@ void *myThreadFun(void *mpla)
 	sleep(1);
 	return NULL;
 }
-void *myThreadFun2(void *mpla) 
-{
-	char buf[maxmsg];
-	cin.getline(buf,maxmsg);
-	write( *(int *)mpla,buf, maxmsg);		
-	bzero(buf,maxmsg);
-	sleep(1);
-	pthread_exit(NULL);
-	return NULL;
-}
+
 void Comm(int *socketfd){
 	ssize_t x;
 	ssize_t y;
@@ -47,12 +38,6 @@ void Comm(int *socketfd){
 		y= write( *socketfd,buf, maxmsg);
 		//Clean buf
 		bzero(buf,maxmsg);
-		pthread_create(&thread_1,NULL, myThreadFun2,(void *) &(*(int *)socketfd) ); 
-
-		//Recieve buf from server
-		x=read( *socketfd,buf, maxmsg);
-		pthread_join(thread_1, NULL); 
-		cout<<buf<<endl;
 
 	//The loop stop only if read() return error
 	}while (x!=-1);

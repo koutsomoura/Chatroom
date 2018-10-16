@@ -21,17 +21,7 @@ void *myThreadFun(void *mpla)
 	pthread_exit(NULL);
 	return NULL;
 }
-void *myThreadFun2(void *mpla) 
-{
-	char buf[maxmsg];
-	read( *(int *)mpla,buf, maxmsg);
-	cout<<buf<<endl;
-	printf("%d ON THREAD\n",*(int *)mpla);	
-	bzero(buf,maxmsg);
-	pthread_exit(NULL);
-	sleep(1);
-	return NULL;
-}
+
 void Speak(int *acceptvalue){
 	ssize_t	x;
 	ssize_t y;
@@ -47,10 +37,6 @@ void Speak(int *acceptvalue){
 
 		//Clean buf
 		bzero(buf,maxmsg);
-		pthread_create(&thread_1,NULL, myThreadFun2,(void *) &(*(int *)acceptvalue)); 
-		cin.getline(buf,maxmsg);
-		//Send a new buf to client
-		y=write( *acceptvalue,buf, maxmsg);
 
 	//The loop stop only if read() return error
 	}while (x!=-1);
