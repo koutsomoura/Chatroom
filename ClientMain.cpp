@@ -7,17 +7,30 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <thread>
+#include <signal.h>
 using namespace std;
 #define maxmsg 500
+
+void HandlerSingal(int s){
+	printf("QUIT BB\n");
+}
 
 void *myThreadFun(void *mpla) 
 {
 	char buf[maxmsg];
-	read( *(int *)mpla,buf, maxmsg);
-	cout<<buf<<endl;
-	printf("%d ON THREAD\n",*(int *)mpla);	
+	char quitbuton[]="q";
+
+	cin.getline(buf,maxmsg);
+	if (strcmp(buf,quitbuton)==0){
+			raise(SIGTERM);
+			pid_t  pid;
+			kill(pid,SIGKILL);
+	}
+
+		//Send buf to server
+	write( *(int *)mpla,buf, maxmsg);
+
 	bzero(buf,maxmsg);
-	pthread_exit(NULL);
 	sleep(1);
 	return NULL;
 }
@@ -29,13 +42,13 @@ void Comm(int *socketfd){
 
 	//create string with 500 max letters
 	char buf[maxmsg];
-
 	do{
 
 		pthread_create(&thread_1,NULL, myThreadFun, (void *) &(*(int *)socketfd) ); 
-		cin.getline(buf,maxmsg);
-		//Send buf to server
-		y= write( *socketfd,buf, maxmsg);
+		sleep(1);
+		read( *socketfd,buf, maxmsg);
+		cout<<buf<<endl;
+
 		//Clean buf
 		bzero(buf,maxmsg);
 
@@ -48,6 +61,7 @@ void Comm(int *socketfd){
 int main(){
 	int portno=5033;
 	int socketfd=socket( AF_INET ,SOCK_STREAM ,0);
+	signal (SIGTERM, HandlerSingal);
 
 	struct sockaddr_in addr1;
 	memset((char *) &addr1,0, sizeof(addr1));
@@ -65,6 +79,7 @@ int main(){
 
 	Comm( &socketfd);
 
+	close(connectvalue);
 	close(socketfd);
 
 }

@@ -10,15 +10,27 @@
 using namespace std;
 #define maxmsg 500
 #define maxLengthOfPendingConnections 10
+#include <signal.h>
 
+
+void HandlerSingal(int s){
+	printf("QUIT BB\n");
+}
 void *myThreadFun(void *mpla) 
 {
 	char buf[maxmsg];
+	char quitbuton[]="q";
+	
 	cin.getline(buf,maxmsg);
-	write( *(int *)mpla,buf, maxmsg);		
+
+	if (strcmp(buf,quitbuton)==0){
+			raise(SIGTERM);
+			pid_t  pid;
+			kill(pid,SIGKILL);
+	}
+	write( *(int *)mpla,buf, maxmsg);	
 	bzero(buf,maxmsg);
 	sleep(1);
-	pthread_exit(NULL);
 	return NULL;
 }
 
@@ -26,18 +38,17 @@ void Speak(int *acceptvalue){
 	ssize_t	x;
 	ssize_t y;
 	pthread_t thread_1;
-
 	char buf[maxmsg];
-
 	do{
 		pthread_create(&thread_1,NULL, myThreadFun,(void *) &(*(int *)acceptvalue)); 
 		//Wait until read buf from client
-		x=read( *acceptvalue, buf, maxmsg);
+		sleep(1);
+		read(*acceptvalue, buf, maxmsg);
 		cout<<buf<<endl;
-
+		
 		//Clean buf
 		bzero(buf,maxmsg);
-
+		
 	//The loop stop only if read() return error
 	}while (x!=-1);
 	return;
@@ -50,6 +61,7 @@ int main(){
 	struct sockaddr_in addr;
 	struct sockaddr_in addr1;
 	socklen_t clilen;
+	signal (SIGTERM, HandlerSingal);
 
 	bzero((char *) &addr, sizeof(addr));
 	addr.sin_family = AF_INET;
@@ -71,9 +83,8 @@ int main(){
 	if (acceptvalue==-1){
 		cout<<"Den ekane accept"<<endl;
 	}
-
 	Speak(&acceptvalue);
-	
-	close(acceptvalue);
+   	close(acceptvalue);
 	close(socketfd);
 }
+
