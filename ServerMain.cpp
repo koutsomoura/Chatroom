@@ -11,47 +11,48 @@ using namespace std;
 #define maxmsg 500
 #define maxLengthOfPendingConnections 10
 #include <signal.h>
-
+bool contision=true;
+//Create a String with max letters maxmsg
+char buf[maxmsg];
 
 void HandlerSingal(int s){
-	printf("QUIT BB\n");
+	printf("\nQUIT BB\n");
+	contision=false;
 }
 void *myThreadFun(void *mpla) 
 {
-	char buf[maxmsg];
-	char quitbuton[]="q";
-	
-	cin.getline(buf,maxmsg);
-
-	if (strcmp(buf,quitbuton)==0){
-			raise(SIGTERM);
-			pid_t  pid;
-			kill(pid,SIGKILL);
-	}
-	write( *(int *)mpla,buf, maxmsg);	
-	bzero(buf,maxmsg);
-	sleep(1);
-	return NULL;
-}
-
-void Speak(int *acceptvalue){
-	ssize_t	x;
-	ssize_t y;
-	pthread_t thread_1;
-	char buf[maxmsg];
-	do{
-		pthread_create(&thread_1,NULL, myThreadFun,(void *) &(*(int *)acceptvalue)); 
-		//Wait until read buf from client
-		sleep(1);
-		read(*acceptvalue, buf, maxmsg);
-		cout<<buf<<endl;
-		
-		//Clean buf
+	while(contision){
+		//Input String from keyboard
+		cin.getline(buf,maxmsg);
+		//Send the String to the Server via value mpla
+		write( *(int *)mpla,buf, maxmsg);	
+		//Eliminate the String
 		bzero(buf,maxmsg);
-		
-	//The loop stop only if read() return error
-	}while (x!=-1);
-	return;
+	}	
+}
+void *myThreadFun2(void *mpla) 
+{
+	while(contision){
+		//Receive a message from Server
+		read( *(int *)mpla,buf, maxmsg);
+		//Print the massage 
+		cout<<buf<<endl;
+		//Eliminate the String
+		bzero(buf,maxmsg);
+	}	
+}
+void Speak(int *acceptvalue){
+
+	pthread_t thread_1;
+	pthread_t thread_2;
+	//Create thread_1
+	pthread_create(&thread_1,NULL, myThreadFun,(void *) &(*(int *)acceptvalue)); 
+	//Create thread_2
+	pthread_create(&thread_2,NULL, myThreadFun2,(void *) &(*(int *)acceptvalue)); 
+
+	while(contision){
+		sleep(1);
+	}
 }
 
 int main(){
@@ -61,7 +62,7 @@ int main(){
 	struct sockaddr_in addr;
 	struct sockaddr_in addr1;
 	socklen_t clilen;
-	signal (SIGTERM, HandlerSingal);
+	signal (SIGINT, HandlerSingal);
 
 	bzero((char *) &addr, sizeof(addr));
 	addr.sin_family = AF_INET;
@@ -85,6 +86,7 @@ int main(){
 	}
 	Speak(&acceptvalue);
    	close(acceptvalue);
+   	close(ginetePassive);
+   	close(desimo);
 	close(socketfd);
 }
-
